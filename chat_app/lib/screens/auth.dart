@@ -50,6 +50,8 @@ class _AuthScreenState extends State<AuthScreen> {
         print(userCredential.user);
       }
     } on FirebaseAuthException catch (e) {
+      if(!mounted)return;
+
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -83,7 +85,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Opacity(
                   opacity: 0.37,
                   child: Image.asset(
-                    'assets/images/chat.png',
+                    './assets/images/chat.png',
                     width: 200,
                     color:
                         Theme.of(context).colorScheme.onSurface.withAlpha(100),
