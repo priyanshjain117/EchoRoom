@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
@@ -58,8 +59,18 @@ class _AuthScreenState extends State<AuthScreen> {
 
         final supabase=Supabase.instance.client;
 
-        await supabase.storage.from('images').upload(imagePath, imageFile);
+        final resSupa=await supabase.storage.from('images').upload(imagePath, imageFile);
+        if (resSupa==null) {
+          print("supa problem");
+        }
         final imageUrl= supabase.storage.from('images').getPublicUrl(imagePath);
+        print('url :$imageUrl');
+
+        await FirebaseFirestore.instance.collection('users').doc(userId).set({
+          'username':"username...",
+          'email':_enteredEmail,
+          'imageUrl':imageUrl,
+        });
 
       }
     } on FirebaseAuthException catch (e) {
