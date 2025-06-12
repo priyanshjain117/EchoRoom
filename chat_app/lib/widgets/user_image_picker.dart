@@ -68,12 +68,12 @@ class _UserImagePickerState extends State<UserImagePicker> {
         ),
         TextButton.icon(
           icon: Icon(
-            Icons.add_a_photo_outlined,
+            imagePicked != null ? Icons.refresh : Icons.add_a_photo_outlined,
             color: Colors.white70,
           ),
           onPressed: _onAddImage,
           label: Text(
-            "Add Photo",
+            imagePicked != null ? 'Retake' : "Add Photo",
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Colors.white70,
                 ),

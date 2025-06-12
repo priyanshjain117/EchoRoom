@@ -14,9 +14,11 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.tertiary,
+        centerTitle: true,
         title: Text(
           "EchoRoom",
-          style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+          // textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Theme.of(context).colorScheme.onTertiary,
               ),

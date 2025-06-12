@@ -23,12 +23,11 @@ class SplashScreen extends StatelessWidget {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            // crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
                 'assets/images/chat.png',
                 width: 300,
-                color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
+                color: Theme.of(context).colorScheme.surfaceDim,
               ),
               SizedBox(
                 height: 16,
@@ -36,8 +35,8 @@ class SplashScreen extends StatelessWidget {
               Text(
                 "EchoRoom connect and meet!",
                 style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                 textAlign: TextAlign.center,
               )

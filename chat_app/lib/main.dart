@@ -38,7 +38,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 1),(){
+    Timer(Duration(seconds: 2),(){
       setState(() {
         _inSplashScreen=false;
       });
