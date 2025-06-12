@@ -1,6 +1,7 @@
-import 'package:chat_app/widgets/pass_field.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_app/widgets/user_image_picker.dart';
+import 'package:chat_app/widgets/pass_field.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -50,7 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
         print(userCredential.user);
       }
     } on FirebaseAuthException catch (e) {
-      if(!mounted)return;
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,16 +121,15 @@ class _AuthScreenState extends State<AuthScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if(_isLogin)
+                                if (_isLogin)
                                   const Icon(
                                     Icons.person,
                                     size: 120,
                                     weight: 999,
                                     color: Color.fromARGB(189, 235, 199, 199),
                                   ),
-                                if(!_isLogin)
-
-                                const SizedBox(height: 12),
+                                if (!_isLogin) UserImagePicker(),
+                                SizedBox(height: _isLogin ? 12 : 0),
                                 TextFormField(
                                   style: TextStyle(
                                     color:
