@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_app/helper/credentials.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -36,7 +37,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       setState(() {
-        _isAuthenticating=true;
+        _isAuthenticating = true;
       });
       if (_isLogin) {
         //  log in process
@@ -52,26 +53,35 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _enteredEmail,
           password: _passwordController.text,
         );
-        
-        final userId=userCredential.user!.uid;
+        // After the user signs up or logs in:
+        final firebaseUser = FirebaseAuth.instance.currentUser;
+        final token = await firebaseUser!.getIdToken();
+        final supabaseClient = SupabaseClient(
+          supabaseUrl,
+          supabaseKey,
+          headers: {'Authorization': 'Bearer $token'},
+        );
+        final userId = userCredential.user!.uid;
         final imagePath = 'user_images/$userId.jpg';
         final imageFile = File(_selectedImage!.path);
+// Assuming you have imagePath and imageFile from image picker
+        try {
+          final uploadedPath = await supabaseClient.storage
+              .from('images')
+              .upload(imagePath, imageFile);
 
-        final supabase=Supabase.instance.client;
-
-        final resSupa=await supabase.storage.from('images').upload(imagePath, imageFile);
-        if (resSupa==null) {
-          print("supa problem");
+          // Get public URL (optional, if needed)
+          final imageUrl =
+              supabaseClient.storage.from('images').getPublicUrl(imagePath);
+          
+          // Store in Firestore
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .set({'imageUrl': imageUrl}, SetOptions(merge: true));
+        } catch (e) {
+          print('Error uploading image: $e');
         }
-        final imageUrl= supabase.storage.from('images').getPublicUrl(imagePath);
-        print('url :$imageUrl');
-
-        await FirebaseFirestore.instance.collection('users').doc(userId).set({
-          'username':"username...",
-          'email':_enteredEmail,
-          'imageUrl':imageUrl,
-        });
-
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -84,8 +94,8 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         ),
       );
-        setState(() {
-        _isAuthenticating=false;
+      setState(() {
+        _isAuthenticating = false;
       });
     }
   }
@@ -236,60 +246,60 @@ class _AuthScreenState extends State<AuthScreen> {
                                 SizedBox(
                                   height: 11,
                                 ),
-                                if(_isAuthenticating)
+                                if (_isAuthenticating)
                                   const CircularProgressIndicator(
                                     color: Colors.blueGrey,
                                   ),
-                                if(!_isAuthenticating)
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: _submit,
-                                      style: ElevatedButton.styleFrom(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                if (!_isAuthenticating)
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: _submit,
+                                        style: ElevatedButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
                                         ),
-                                      ),
-                                      child: Text(
-                                        _isLogin ? "Sign in" : "Sign Up",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ),
-                                    Flexible(
-                                      child: TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _isLogin = !_isLogin;
-                                          });
-                                        },
                                         child: Text(
-                                          _isLogin
-                                              ? "Create an account"
-                                              : "Already have an account",
-                                          softWrap: true,
-                                          maxLines: 2,
-                                          textAlign: TextAlign.center,
+                                          _isLogin ? "Sign in" : "Sign Up",
                                           style: Theme.of(context)
                                               .textTheme
                                               .labelLarge!
                                               .copyWith(
-                                                  // fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onPrimary),
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                       ),
-                                    )
-                                  ],
-                                )
+                                      Flexible(
+                                        child: TextButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _isLogin = !_isLogin;
+                                            });
+                                          },
+                                          child: Text(
+                                            _isLogin
+                                                ? "Create an account"
+                                                : "Already have an account",
+                                            softWrap: true,
+                                            maxLines: 2,
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelLarge!
+                                                .copyWith(
+                                                    // fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimary),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  )
                               ],
                             ),
                           ),
