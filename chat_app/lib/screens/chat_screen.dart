@@ -14,15 +14,23 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.tertiary,
-        title: Text("EcoRoom",style:Theme.of(context).textTheme.headlineMedium!.copyWith(
-          fontWeight:FontWeight.w600,
-        ),),
+        title: Text(
+          "EchoRoom",
+          style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onTertiary,
+              ),
+        ),
         actions: [
           IconButton(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
             },
-            icon: Icon(Icons.logout,color: Colors.white70,size: 33,),
+            icon: Icon(
+              Icons.logout,
+              color: Colors.white70,
+              size: 33,
+            ),
           ),
         ],
       ),

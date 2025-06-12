@@ -120,12 +120,15 @@ class _AuthScreenState extends State<AuthScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.person,
-                                  size: 120,
-                                  weight: 999,
-                                  color: Color.fromARGB(189, 235, 199, 199),
-                                ),
+                                if(_isLogin)
+                                  const Icon(
+                                    Icons.person,
+                                    size: 120,
+                                    weight: 999,
+                                    color: Color.fromARGB(189, 235, 199, 199),
+                                  ),
+                                if(!_isLogin)
+
                                 const SizedBox(height: 12),
                                 TextFormField(
                                   style: TextStyle(
