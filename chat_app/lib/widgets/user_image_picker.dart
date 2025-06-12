@@ -13,7 +13,7 @@ class UserImagePicker extends StatefulWidget {
 class _UserImagePickerState extends State<UserImagePicker> {
   File? imagePicked;
 
-  Future<void> onAddImage() async {
+  Future<void> _onAddImage() async {
     final picker = ImagePicker();
     final pickedImage = await picker.pickImage(
       source: ImageSource.camera,
@@ -71,7 +71,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
             Icons.add_a_photo_outlined,
             color: Colors.white70,
           ),
-          onPressed: () {},
+          onPressed: _onAddImage,
           label: Text(
             "Add Photo",
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(

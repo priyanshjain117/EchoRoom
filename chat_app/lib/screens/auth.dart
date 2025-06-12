@@ -227,24 +227,29 @@ class _AuthScreenState extends State<AuthScreen> {
                                             ),
                                       ),
                                     ),
-                                    TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _isLogin = !_isLogin;
-                                        });
-                                      },
-                                      child: Text(
-                                        _isLogin
-                                            ? "Create an account"
-                                            : "Already have an account",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                                // fontWeight: FontWeight.bold,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary),
+                                    Flexible(
+                                      child: TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isLogin = !_isLogin;
+                                          });
+                                        },
+                                        child: Text(
+                                          _isLogin
+                                              ? "Create an account"
+                                              : "Already have an account",
+                                            softWrap: true,
+                                            maxLines: 2,
+                                            textAlign: TextAlign.center,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge!
+                                              .copyWith(
+                                                  // fontWeight: FontWeight.bold,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onPrimary),
+                                        ),
                                       ),
                                     )
                                   ],
