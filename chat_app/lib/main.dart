@@ -1,11 +1,13 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+
 import 'package:chat_app/screens/auth.dart';
 import 'package:chat_app/screens/chat_screen.dart';
 import 'package:chat_app/screens/splash_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -17,9 +19,25 @@ Future<void> main() async {
   runApp(const App());
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
 
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  bool _inSplashScreen=true;
+
+  @override
+  void initState() {
+    super.initState();
+    Timer(Duration(seconds: 1),(){
+      setState(() {
+        _inSplashScreen=false;
+      });
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,7 +51,7 @@ class App extends StatelessWidget {
       home: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (_inSplashScreen || snapshot.connectionState == ConnectionState.waiting) {
             return const SplashScreen();
           }else if (snapshot.hasData) {
             return const ChatScreen();
