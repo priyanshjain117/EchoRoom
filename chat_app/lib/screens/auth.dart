@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
 import 'package:chat_app/widgets/pass_field.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -16,28 +19,30 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
 
   bool _isLogin = true;
+  bool _isAuthenticating = false;
   String _enteredEmail = '';
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  File? _selectedImage;
 
   void _submit() async {
     final isValid = _formKey.currentState!.validate();
-    if (!isValid) {
+    if (!isValid || (!_isLogin && _selectedImage == null)) {
       return;
     }
 
     _formKey.currentState!.save();
 
     try {
+      setState(() {
+        _isAuthenticating=true;
+      });
       if (_isLogin) {
         //  log in process
         final userCredential = await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _passwordController.text,
         );
-
-        print(userCredential);
-        print(userCredential.user);
       } else {
         // sign up process
         print(_passwordController.text);
@@ -46,9 +51,16 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _enteredEmail,
           password: _passwordController.text,
         );
+        
+        final userId=userCredential.user!.uid;
+        final imagePath = 'user_images/$userId.jpg';
+        final imageFile = File(_selectedImage!.path);
 
-        print(userCredential);
-        print(userCredential.user);
+        final supabase=Supabase.instance.client;
+
+        await supabase.storage.from('images').upload(imagePath, imageFile);
+        final imageUrl= supabase.storage.from('images').getPublicUrl(imagePath);
+
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -61,6 +73,9 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         ),
       );
+        setState(() {
+        _isAuthenticating=false;
+      });
     }
   }
 
@@ -128,7 +143,12 @@ class _AuthScreenState extends State<AuthScreen> {
                                     weight: 999,
                                     color: Color.fromARGB(189, 235, 199, 199),
                                   ),
-                                if (!_isLogin) UserImagePicker(),
+                                if (!_isLogin)
+                                  UserImagePicker(
+                                    onPickImage: (pickedImage) {
+                                      _selectedImage = pickedImage;
+                                    },
+                                  ),
                                 SizedBox(height: _isLogin ? 12 : 0),
                                 TextFormField(
                                   style: TextStyle(
@@ -205,6 +225,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 SizedBox(
                                   height: 11,
                                 ),
+                                if(_isAuthenticating)
+                                  const CircularProgressIndicator(
+                                    color: Colors.blueGrey,
+                                  ),
+                                if(!_isAuthenticating)
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
@@ -238,9 +263,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                           _isLogin
                                               ? "Create an account"
                                               : "Already have an account",
-                                            softWrap: true,
-                                            maxLines: 2,
-                                            textAlign: TextAlign.center,
+                                          softWrap: true,
+                                          maxLines: 2,
+                                          textAlign: TextAlign.center,
                                           style: Theme.of(context)
                                               .textTheme
                                               .labelLarge!

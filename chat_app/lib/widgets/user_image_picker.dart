@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserImagePicker extends StatefulWidget {
-  const UserImagePicker({super.key});
+  const UserImagePicker({super.key,required this.onPickImage});
+  final void Function(File pickedImage) onPickImage;
 
   @override
   State<UserImagePicker> createState() => _UserImagePickerState();
 }
 
 class _UserImagePickerState extends State<UserImagePicker> {
-  File? imagePicked;
+  File? _imagePicked;
 
-  Future<void> _onAddImage() async {
+  Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedImage = await picker.pickImage(
       source: ImageSource.camera,
@@ -26,12 +27,15 @@ class _UserImagePickerState extends State<UserImagePicker> {
     }
 
     setState(() {
-      imagePicked = File(pickedImage.path);
+      _imagePicked = File(pickedImage.path);
     });
+    widget.onPickImage(_imagePicked!);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isImagePicked=_imagePicked != null;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,9 +45,9 @@ class _UserImagePickerState extends State<UserImagePicker> {
             width: 100,
             height: 100,
             color: Colors.grey[300],
-            child: imagePicked != null
+            child: isImagePicked
                 ? Image.file(
-                    imagePicked!,
+                    _imagePicked!,
                     fit: BoxFit.cover,
                   )
                 : Container(
@@ -68,12 +72,12 @@ class _UserImagePickerState extends State<UserImagePicker> {
         ),
         TextButton.icon(
           icon: Icon(
-            imagePicked != null ? Icons.refresh : Icons.add_a_photo_outlined,
+            isImagePicked ? Icons.refresh : Icons.add_a_photo_outlined,
             color: Colors.white70,
           ),
-          onPressed: _onAddImage,
+          onPressed: _pickImage,
           label: Text(
-            imagePicked != null ? 'Retake' : "Add Photo",
+            isImagePicked? 'Retake' : "Add Photo",
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Colors.white70,
                 ),

@@ -26,7 +26,7 @@ class SplashScreen extends StatelessWidget {
             children: [
               Image.asset(
                 'assets/images/chat.png',
-                width: 300,
+                width: 270,
                 color: Theme.of(context).colorScheme.surfaceDim,
               ),
               SizedBox(

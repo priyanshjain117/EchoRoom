@@ -17,7 +17,6 @@ class _ChatScreenState extends State<ChatScreen> {
         centerTitle: true,
         title: Text(
           "EchoRoom",
-          // textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Theme.of(context).colorScheme.onTertiary,
