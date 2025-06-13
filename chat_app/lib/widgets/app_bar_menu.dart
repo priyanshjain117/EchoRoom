@@ -18,7 +18,7 @@ class AppBarMenu extends StatelessWidget {
         final RelativeRect position = RelativeRect.fromLTRB(
           offset.dx,
           offset.dy + 40, // Shift down from the icon
-          overlay.size.width - offset.dx,
+          overlay.size.width-offset.dx-20,
           0,
         );
 
