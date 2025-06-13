@@ -45,7 +45,6 @@ class _AuthScreenState extends State<AuthScreen> {
       final resStr = await response.stream.bytesToString();
       final Map<String, dynamic> jsonRes = json.decode(resStr);
       final imageUrl = jsonRes['secure_url'];
-      final publicId = jsonRes['public_id'];
 
       print('Uploaded successfully! URL: $imageUrl');
       return imageUrl;
@@ -100,6 +99,7 @@ class _AuthScreenState extends State<AuthScreen> {
           'username': _username,
           'email': _enteredEmail,
           'imageUrl': imageUrl,
+          'allowedRooms': [],
         });
       }
     } on FirebaseAuthException catch (e) {
@@ -236,6 +236,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ),
                                 if (!_isLogin)
                                   TextFormField(
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    ),
                                     decoration: InputDecoration(
                                       labelText: 'Username',
                                       labelStyle: TextStyle(
@@ -253,6 +258,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                         fontSize: 13,
                                       ),
                                     ),
+                                    cursorColor: Colors.white70,
                                     enableSuggestions: false,
                                     validator: (value) {
                                       if (value == null ||

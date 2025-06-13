@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserImagePicker extends StatefulWidget {
-  const UserImagePicker({super.key,required this.onPickImage});
+  const UserImagePicker({super.key, required this.onPickImage});
   final void Function(File pickedImage) onPickImage;
 
   @override
@@ -14,10 +14,10 @@ class UserImagePicker extends StatefulWidget {
 class _UserImagePickerState extends State<UserImagePicker> {
   File? _imagePicked;
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(ImageSource src) async {
     final picker = ImagePicker();
     final pickedImage = await picker.pickImage(
-      source: ImageSource.camera,
+      source: src,
       maxWidth: 320,
     );
 
@@ -31,9 +31,59 @@ class _UserImagePickerState extends State<UserImagePicker> {
     widget.onPickImage(_imagePicked!);
   }
 
+  void _pickSource() {
+    const styleButton = ButtonStyle(
+      elevation: WidgetStatePropertyAll(12),
+      iconSize: WidgetStatePropertyAll(50),
+      foregroundColor: WidgetStatePropertyAll(Colors.amberAccent),
+      iconColor: WidgetStatePropertyAll(Colors.white70),
+    );
+    final styleText = Theme.of(context).textTheme.titleMedium!.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Colors.white70,
+        );
+    showBottomSheet(
+      backgroundColor: Colors.blueGrey,
+      context: context,
+      builder: (context) => SizedBox(
+        height: 125,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              icon: Icon(Icons.camera_alt),
+              style: styleButton,
+              onPressed: () {
+                _pickImage(ImageSource.camera);
+                Navigator.pop(context);
+              },
+              label: Text(
+                "Camera",
+                style: styleText,
+              ),
+            ),
+            TextButton.icon(
+              icon: Icon(Icons.photo),
+              style: styleButton,
+              onPressed: () {
+                _pickImage(ImageSource.gallery);
+                Navigator.pop(context);
+              },
+              label: Text(
+                "Gallery",
+                style: styleText,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isImagePicked=_imagePicked != null;
+    final isImagePicked = _imagePicked != null;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -74,9 +124,9 @@ class _UserImagePickerState extends State<UserImagePicker> {
             isImagePicked ? Icons.refresh : Icons.add_a_photo_outlined,
             color: Colors.white70,
           ),
-          onPressed: _pickImage,
+          onPressed: _pickSource,
           label: Text(
-            isImagePicked? 'Retake' : "Add Photo",
+            isImagePicked ? 'Retake' : "Add Photo",
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Colors.white70,
                 ),

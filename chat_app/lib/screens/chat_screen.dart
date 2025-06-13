@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_app/widgets/app_bar_menu.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -23,35 +23,28 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
         ),
         actions: [
-          IconButton(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-            },
-            icon: Icon(
-              Icons.logout,
-              color: Colors.white70,
-              size: 33,
-            ),
+          Builder(
+            builder: (context) => AppBarMenu(),
           ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.tertiary,
-              Theme.of(context).colorScheme.primary,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.tertiary,
+                Theme.of(context).colorScheme.primary,
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            
-          ],
-        )
-      ),
+          child: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              children: [],
+            ),
+          )),
     );
   }
 }
