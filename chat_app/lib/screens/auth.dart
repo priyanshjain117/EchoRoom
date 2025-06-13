@@ -1,12 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:chat_app/helper/credentials.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'package:chat_app/helper/credentials.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
 import 'package:chat_app/widgets/pass_field.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -23,14 +24,49 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   bool _isAuthenticating = false;
   String _enteredEmail = '';
+  String? _username = '';
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   File? _selectedImage;
 
+  Future<String?> _uploadImage(File file, String fileName) async {
+    const String uploadPreset = 'flutter_unsigned';
+
+    final Uri uploadUrl = Uri.parse(
+      'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
+    );
+    final request = http.MultipartRequest('POST', uploadUrl)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final resStr = await response.stream.bytesToString();
+      final Map<String, dynamic> jsonRes = json.decode(resStr);
+      final imageUrl = jsonRes['secure_url'];
+      final publicId = jsonRes['public_id'];
+
+      print('Uploaded successfully! URL: $imageUrl');
+      return imageUrl;
+    } else {
+      print('Upload failed with status: ${response.statusCode}');
+      return null;
+    }
+  }
+
   void _submit() async {
     final isValid = _formKey.currentState!.validate();
-    if (!isValid || (!_isLogin && _selectedImage == null)) {
+    if (!isValid) {
       return;
+    }
+    if (!_isLogin && _selectedImage == null) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Please upload an image"),
+        ),
+      );
     }
 
     _formKey.currentState!.save();
@@ -41,7 +77,7 @@ class _AuthScreenState extends State<AuthScreen> {
       });
       if (_isLogin) {
         //  log in process
-        final userCredential = await _firebase.signInWithEmailAndPassword(
+        await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _passwordController.text,
         );
@@ -53,35 +89,18 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _enteredEmail,
           password: _passwordController.text,
         );
-        // After the user signs up or logs in:
-        final firebaseUser = FirebaseAuth.instance.currentUser;
-        final token = await firebaseUser!.getIdToken();
-        final supabaseClient = SupabaseClient(
-          supabaseUrl,
-          supabaseKey,
-          headers: {'Authorization': 'Bearer $token'},
-        );
-        final userId = userCredential.user!.uid;
-        final imagePath = 'user_images/$userId.jpg';
-        final imageFile = File(_selectedImage!.path);
-// Assuming you have imagePath and imageFile from image picker
-        try {
-          final uploadedPath = await supabaseClient.storage
-              .from('images')
-              .upload(imagePath, imageFile);
+        // After the user signs up:
+        final imageUrl =
+            await _uploadImage(_selectedImage!, userCredential.user!.uid);
 
-          // Get public URL (optional, if needed)
-          final imageUrl =
-              supabaseClient.storage.from('images').getPublicUrl(imagePath);
-          
-          // Store in Firestore
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(userId)
-              .set({'imageUrl': imageUrl}, SetOptions(merge: true));
-        } catch (e) {
-          print('Error uploading image: $e');
-        }
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+          'username': _username,
+          'email': _enteredEmail,
+          'imageUrl': imageUrl,
+        });
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -212,6 +231,41 @@ class _AuthScreenState extends State<AuthScreen> {
                                     _enteredEmail = newValue!;
                                   },
                                 ),
+                                SizedBox(
+                                  height: 2,
+                                ),
+                                if (!_isLogin)
+                                  TextFormField(
+                                    decoration: InputDecoration(
+                                      labelText: 'Username',
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.white54,
+                                        ),
+                                      ),
+                                      errorStyle: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    enableSuggestions: false,
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty ||
+                                          value.trim().length < 4) {
+                                        return "Enter username of atleast 4 character long";
+                                      }
+                                      return null;
+                                    },
+                                    onSaved: (newValue) {
+                                      _username = newValue;
+                                    },
+                                  ),
                                 SizedBox(
                                   height: 2,
                                 ),

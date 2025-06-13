@@ -46,6 +46,11 @@ class _ChatScreenState extends State<ChatScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
+        child: Column(
+          children: [
+            
+          ],
+        )
       ),
     );
   }

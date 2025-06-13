@@ -9,7 +9,6 @@ import 'package:chat_app/screens/splash_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -17,11 +16,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await Supabase.initialize(
-  url: supabaseUrl,
-  anonKey: supabaseKey,
-);
-
+  
   runApp(const App());
 }
 
