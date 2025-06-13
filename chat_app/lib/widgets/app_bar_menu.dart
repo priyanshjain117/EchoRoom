@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AppBarMenu extends StatelessWidget {
@@ -6,6 +7,11 @@ class AppBarMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      icon: Icon(
+        Icons.more_vert,
+        color: Colors.white70,
+        size: 28,
+      ),
       onPressed: () async {
         final RenderBox button = context.findRenderObject() as RenderBox;
         final RenderBox overlay =
@@ -18,17 +24,37 @@ class AppBarMenu extends StatelessWidget {
         final RelativeRect position = RelativeRect.fromLTRB(
           offset.dx,
           offset.dy + 40, // Shift down from the icon
-          overlay.size.width-offset.dx-20,
+          overlay.size.width - offset.dx - 20,
           0,
         );
 
         final selectedItem = await showMenu<String>(
           context: context,
+          color: Theme.of(context).colorScheme.tertiaryContainer,
           position: position,
           initialValue: '',
           items: [
-            PopupMenuItem(value: 'new_group', child: Text('New Group')),
-            PopupMenuItem(value: 'logout', child: Text('Logout')),
+            PopupMenuItem(
+              value: 'new_group',
+              child: Text(
+                'New Group',
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.onTertiaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'logout',
+              child: Text(
+                'Logout',
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.onTertiaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+              onTap: () => FirebaseAuth.instance.signOut(),
+            ),
           ],
         );
 
@@ -40,11 +66,6 @@ class AppBarMenu extends StatelessWidget {
           print('none');
         }
       },
-      icon: Icon(
-        Icons.more_vert,
-        color: Colors.white70,
-        size: 28,
-      ),
     );
   }
 }
