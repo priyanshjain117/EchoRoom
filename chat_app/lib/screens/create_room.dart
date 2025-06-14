@@ -30,10 +30,11 @@ class _CreateRoomState extends State<CreateRoom> {
             'name': _roomNameController.text,
             'createdBy': user!.uid,
             'members': [user.uid],
-            'createdAt': FieldValue.serverTimestamp(),
+            'createdAt': Timestamp.now(),
+            'lastUpdate': Timestamp.now(),
           } as Map<String, dynamic>);
       if (mounted) {
-        Navigator.of(context).pop(); // or navigate to the room screen
+        Navigator.of(context).pop(); 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Room created successfully!'),),
         );

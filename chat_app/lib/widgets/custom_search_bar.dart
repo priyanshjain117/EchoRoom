@@ -27,7 +27,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
     _roomsStream = firestore
         .collection('rooms')
         .where('members', arrayContains: currentUserId)
-        .orderBy('createdAt', descending: true)
+        .orderBy('lastUpdate', descending: true)
         .snapshots();
 
     _searchInput.addListener(() {
@@ -98,7 +98,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           margin: const EdgeInsets.symmetric(vertical: 3.2, horizontal: 2,),
           child: ListTile(
             title: Text(room['name'] ?? 'Unnamed Room'),
-            subtitle: Text('Created by: ${room['createdBy'] ?? 'N/A'}'),
+            subtitle: Text('Created at: ${DateTime.fromMillisecondsSinceEpoch(room['createdAt'].millisecondsSinceEpoch) ?? 'N/A'}'),
             onTap: () {
               print('Tapped on room: ${room['name']}');
             },
