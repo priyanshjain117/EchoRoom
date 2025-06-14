@@ -1,3 +1,5 @@
+import 'package:chat_app/widgets/chat_messages.dart';
+import 'package:chat_app/widgets/new_message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -39,6 +41,12 @@ class _ChatScreenState extends State<ChatScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
+        ),
+        child: Column(
+          children: [
+            Expanded(child: ChatMessages()),
+            NewMessage(doc: widget.doc,),
+          ],
         ),
       ),
     );
