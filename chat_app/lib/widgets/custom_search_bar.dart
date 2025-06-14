@@ -31,7 +31,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
         .snapshots();
 
     _searchInput.addListener(() {
-      setState(() {}); // Triggers rebuild for search results
+      setState(() {}); 
     });
 
     _focusNode.addListener(() {
@@ -98,7 +98,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           margin: const EdgeInsets.symmetric(vertical: 3.2, horizontal: 2,),
           child: ListTile(
             title: Text(room['name'] ?? 'Unnamed Room'),
-            subtitle: Text('Created at: ${DateTime.fromMillisecondsSinceEpoch(room['createdAt'].millisecondsSinceEpoch) ?? 'N/A'}'),
+            subtitle: Text('Created at: ${DateTime.fromMillisecondsSinceEpoch(room['createdAt'].millisecondsSinceEpoch)}'),
             onTap: () {
               print('Tapped on room: ${room['name']}');
             },

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:chat_app/screens/auth.dart';
-import 'package:chat_app/screens/chat_screen.dart';
+import 'package:chat_app/screens/chat_list_screen.dart';
 import 'package:chat_app/screens/splash_screen.dart';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -55,7 +55,7 @@ class _AppState extends State<App> {
           if (_inSplashScreen || snapshot.connectionState == ConnectionState.waiting) {
             return const SplashScreen();
           }else if (snapshot.hasData) {
-            return const ChatScreen();
+            return const ChatListScreen();
           }else{
             return const AuthScreen();
           }

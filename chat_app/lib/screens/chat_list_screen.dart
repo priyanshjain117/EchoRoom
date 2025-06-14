@@ -2,14 +2,14 @@ import 'package:chat_app/widgets/app_bar_menu.dart';
 import 'package:chat_app/widgets/custom_search_bar.dart';
 import 'package:flutter/material.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class ChatListScreen extends StatefulWidget {
+  const ChatListScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ChatListScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
