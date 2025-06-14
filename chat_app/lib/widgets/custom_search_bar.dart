@@ -83,12 +83,19 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
       itemCount: docs.length,
       itemBuilder: (context, index) {
         final room = docs[index].data() as Map<String, dynamic>;
-        return Card(
-          color: Colors.white70,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color.fromARGB(206, 202, 221, 230),
+                const Color.fromARGB(255, 154, 173, 247),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(10)
           ),
-          margin: const EdgeInsets.symmetric(vertical: 6),
+          margin: const EdgeInsets.symmetric(vertical: 3.2, horizontal: 2,),
           child: ListTile(
             title: Text(room['name'] ?? 'Unnamed Room'),
             subtitle: Text('Created by: ${room['createdBy'] ?? 'N/A'}'),
@@ -125,7 +132,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                 return ListTile(
                   title: Text(room['name']),
                   onTap: () {
-                    print('Suggested room selected: ${room['name']}');
+                    print('Suggested room selected: ${room['name']} ${filtered[index].id}');
                     _searchInput.clear();
                     _focusNode.unfocus();
                   },
