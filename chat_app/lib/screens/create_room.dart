@@ -1,0 +1,179 @@
+import 'package:chat_app/widgets/pass_field.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+class CreateRoom extends StatefulWidget {
+  const CreateRoom({super.key});
+
+  @override
+  State<CreateRoom> createState() => _CreateRoomState();
+}
+
+class _CreateRoomState extends State<CreateRoom> {
+  final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+  final _roomNameController = TextEditingController();
+
+  Future<void> _onSubmit() async {
+    bool isValid = _formKey.currentState!.validate();
+
+    if (!isValid) {
+      return;
+    }
+
+    _formKey.currentState!.save();
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance.collection('rooms').add({
+            'name': _roomNameController.text,
+            'createdBy': user!.uid,
+            'members': [user.uid],
+            'createdAt': FieldValue.serverTimestamp(),
+          } as Map<String, dynamic>);
+      if (mounted) {
+        Navigator.of(context).pop(); // or navigate to the room screen
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Room created successfully!'),),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _roomNameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Create a Room",
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onTertiary,
+              ),
+        ),
+        foregroundColor: Theme.of(context).colorScheme.onTertiary,
+        backgroundColor: Theme.of(context).colorScheme.tertiary,
+        centerTitle: false,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
+      body: Container(
+        height: double.maxFinite,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.tertiary,
+              Theme.of(context).colorScheme.primary,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    controller: _roomNameController,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Room Name',
+                      hintText: 'Enter your room name',
+                      hintStyle: const TextStyle(
+                        color: Colors.white54,
+                      ),
+                      labelStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: const Color.fromARGB(169, 145, 196, 234),
+                            width: 1.8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: const Color.fromARGB(219, 67, 196, 218),
+                            width: 2.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      errorStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    cursorColor: Colors.white70,
+                    keyboardType: TextInputType.text,
+                    validator: (value) {
+                      if (value == null || value.isEmpty || value.length <= 3) {
+                        return 'Enter a valid room name of atleast 4 length';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  PassField(
+                    controller: _passwordController,
+                    label: "Enter a password",
+                    validator: (value) {
+                      if (value == null || value.trim().length < 6) {
+                        return "Password must be at least 6 characters long.";
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(
+                      Icons.create,
+                      color: Colors.white70,
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.black26,
+                    ),
+                    onPressed: _onSubmit,
+                    label: Text(
+                      "Create Room",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

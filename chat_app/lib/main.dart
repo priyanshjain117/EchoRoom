@@ -41,7 +41,8 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FlutterChat',
+      title: 'EchoRoom',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData().copyWith(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(214, 66, 197, 245),

@@ -1,3 +1,4 @@
+import 'package:chat_app/screens/create_room.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -23,12 +24,12 @@ class AppBarMenu extends StatelessWidget {
         );
         final RelativeRect position = RelativeRect.fromLTRB(
           offset.dx,
-          offset.dy + 40, // Shift down from the icon
+          offset.dy + 40,
           overlay.size.width - offset.dx - 20,
           0,
         );
 
-        final selectedItem = await showMenu<String>(
+        await showMenu<String>(
           context: context,
           color: Theme.of(context).colorScheme.tertiaryContainer,
           position: position,
@@ -37,12 +38,19 @@ class AppBarMenu extends StatelessWidget {
             PopupMenuItem(
               value: 'new_group',
               child: Text(
-                'New Group',
+                'Create Room',
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                       color: Theme.of(context).colorScheme.onTertiaryContainer,
                       fontWeight: FontWeight.w500,
                     ),
               ),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => CreateRoom(),
+                  ),
+                );
+              },
             ),
             PopupMenuItem(
               value: 'logout',
@@ -57,14 +65,6 @@ class AppBarMenu extends StatelessWidget {
             ),
           ],
         );
-
-        if (selectedItem == 'new_group') {
-          print('NewGroup');
-        } else if (selectedItem == 'logout') {
-          print('logout');
-        } else {
-          print('none');
-        }
       },
     );
   }

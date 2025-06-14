@@ -10,53 +10,30 @@ class CustomSearchBar extends StatefulWidget {
 }
 
 class _CustomSearchBarState extends State<CustomSearchBar> {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final TextEditingController _searchInput = TextEditingController();
-  final _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
 
-  List<Map<String, dynamic>> myRooms = [];
-  List<Map<String, dynamic>> suggestedRooms = [];
+  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  late final Stream<QuerySnapshot> _roomsStream;
 
   bool _isFocused = false;
-
-  Future<void> fetchUserRooms() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('rooms')
-        .where('members', arrayContains: currentUserId)
-        .get();
-
-    final userRooms =
-        snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
-
-    setState(() {
-      myRooms = userRooms;
-    });
-  }
-
-  void _updateSuggestion(String search) {
-    if (search.trim().isEmpty) {
-      setState(() => suggestedRooms = []);
-      return;
-    }
-
-    setState(() {
-      suggestedRooms = myRooms
-          .where((room) => room['name']
-              .toString()
-              .toLowerCase()
-              .contains(search.toLowerCase()))
-          .toList();
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    fetchUserRooms();
+
+    _roomsStream = firestore
+        .collection('rooms')
+        .where('members', arrayContains: currentUserId)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+
     _searchInput.addListener(() {
-      _updateSuggestion(_searchInput.text);
+      setState(() {}); // Triggers rebuild for search results
     });
+
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -71,7 +48,92 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
     super.dispose();
   }
 
-  bool get _showSuggestions => _searchInput.text.trim().isNotEmpty;
+  bool get _showSuggestions =>
+      _searchInput.text.trim().isNotEmpty && _isFocused;
+
+  List<QueryDocumentSnapshot> _filterRooms(QuerySnapshot snapshot) {
+    final query = _searchInput.text.toLowerCase();
+    return snapshot.docs.where((doc) {
+      final name = doc['name']?.toString().toLowerCase() ?? '';
+      return name.contains(query);
+    }).toList();
+  }
+
+  Widget _buildMainList(AsyncSnapshot<QuerySnapshot> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return Center(
+        child: Text(
+          'You are not in any rooms yet.',
+          style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                color: Colors.white70,
+                fontWeight: FontWeight.w600,
+              ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    final docs = snapshot.data!.docs;
+
+    return ListView.builder(
+      itemCount: docs.length,
+      itemBuilder: (context, index) {
+        final room = docs[index].data() as Map<String, dynamic>;
+        return Card(
+          color: Colors.white70,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          child: ListTile(
+            title: Text(room['name'] ?? 'Unnamed Room'),
+            subtitle: Text('Created by: ${room['createdBy'] ?? 'N/A'}'),
+            onTap: () {
+              print('Tapped on room: ${room['name']}');
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSuggestions(AsyncSnapshot<QuerySnapshot> snapshot) {
+    final filtered = _filterRooms(snapshot.data!);
+
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.white,
+      child: filtered.isEmpty
+          ? const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                'No matching rooms found.',
+                textAlign: TextAlign.center,
+              ),
+            )
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: filtered.length,
+              itemBuilder: (context, index) {
+                final room =
+                    filtered[index].data() as Map<String, dynamic>;
+                return ListTile(
+                  title: Text(room['name']),
+                  onTap: () {
+                    print('Suggested room selected: ${room['name']}');
+                    _searchInput.clear();
+                    _focusNode.unfocus();
+                  },
+                );
+              },
+            ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,77 +142,34 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
         SearchBar(
           controller: _searchInput,
           focusNode: _focusNode,
-          elevation: WidgetStatePropertyAll(5),
+          elevation: const WidgetStatePropertyAll(4),
           leading: const Icon(Icons.search),
           backgroundColor: const WidgetStatePropertyAll(Colors.white70),
-          hintText: 'Search',
+          hintText: 'Search your rooms...',
           textStyle: const WidgetStatePropertyAll(
             TextStyle(fontWeight: FontWeight.w600),
           ),
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(horizontal: 15),
           ),
-          onChanged: (query) {},
         ),
-        if (_showSuggestions && _isFocused)
-          Material(
-            elevation: 6,
-            borderRadius: BorderRadius.circular(12),
-            child: suggestedRooms.isEmpty
-                ? Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text(
-                      'No matching rooms found.',
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: suggestedRooms.length,
-                    itemBuilder: (context, index) {
-                      final room = suggestedRooms[index];
-                      return ListTile(
-                        title: Text(room['name']),
-                        onTap: () {
-                            print('recommended room: ${room['name']}');
-                          _searchInput.text = ''; 
-                          _focusNode.unfocus(); 
-                        },
-                      );
-                    },
-                  ),
-          ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 13),
         Expanded(
-          child: myRooms.isEmpty
-              ? Center(
-                  child: Text(
-                  'You are not in any rooms yet.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                      color: Colors.white70, fontWeight: FontWeight.w600),
-                ))
-              : ListView.builder(
-                  itemCount: myRooms.length,
-                  itemBuilder: (context, index) {
-                    final room = myRooms[index];
-                    return Card(
-                      color: Colors.white70,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: ListTile(
-                        title: Text(room['name']),
-                        subtitle:
-                            Text('Created by: ${room['creator'] ?? 'N/A'}'),
-                        onTap: () {
-                          print('Tapped on your room: ${room['name']}');
-                        },
-                      ),
-                    );
-                  },
-                ),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: _roomsStream,
+            builder: (context, snapshot) {
+              return Stack(
+                children: [
+                  Visibility(
+                    visible: !_showSuggestions,
+                    child: _buildMainList(snapshot),
+                  ),
+                  if (_showSuggestions)
+                    _buildSuggestions(snapshot),
+                ],
+              );
+            },
+          ),
         ),
       ],
     );
