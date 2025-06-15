@@ -11,6 +11,7 @@ class NewMessage extends StatefulWidget {
 }
 
 class _NewMessageState extends State<NewMessage> {
+  final firestore=FirebaseFirestore.instance;
   final _messageController = TextEditingController();
   @override
   void dispose() {
@@ -19,14 +20,25 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   Future<void> _submitMessage() async {
+    final enteredMessage=_messageController.text.trim();
     final currentUser = FirebaseAuth.instance.currentUser;
+
     if (currentUser == null || _messageController.text.trim().isEmpty) return;
+
+    FocusScope.of(context).unfocus();
+    _messageController.clear();
+
+    final userData=await firestore.collection('users').doc(currentUser.uid).get();
+
     final messageData = {
-      'text': _messageController.text.trim(),
+      'text': enteredMessage,
       'senderId': currentUser.uid,
+      'username': userData.data()!['username'],
+      'imageUrl': userData.data()!['imageUrl'],
       'sentAt': Timestamp.now(),
     };
-    await FirebaseFirestore.instance
+
+    await firestore
         .collection('rooms')
         .doc(widget.doc.id)
         .collection('messages')
@@ -59,6 +71,7 @@ class _NewMessageState extends State<NewMessage> {
             left: 12,
             right: 12,
             bottom: 3,
+            top:5,
           ),
           child: Row(
             children: [
@@ -76,9 +89,11 @@ class _NewMessageState extends State<NewMessage> {
                       hintStyle: TextStyle(
                         color: Color.fromRGBO(255, 255, 255, 0.659),
                       ),
-                      enabledBorder: InputBorder.none),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,),
                   cursorColor: Colors.white70,
                   keyboardType: TextInputType.text,
+                  onSubmitted: (_)=>_submitMessage(),
                 ),
               ),
               IconButton(
@@ -86,6 +101,7 @@ class _NewMessageState extends State<NewMessage> {
                 icon: const Icon(
                   Icons.send,
                   color: Colors.white70,
+                  size: 28,
                 ),
               ),
             ],

@@ -44,7 +44,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         child: Column(
           children: [
-            Expanded(child: ChatMessages()),
+            Expanded(child: ChatMessages(doc: widget.doc,)),
             NewMessage(doc: widget.doc,),
           ],
         ),
