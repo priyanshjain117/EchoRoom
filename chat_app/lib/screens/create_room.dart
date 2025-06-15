@@ -93,6 +93,7 @@ class _CreateRoomState extends State<CreateRoom> {
             'lastUpdate': Timestamp.now(),
           } as Map<String, dynamic>);
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             duration: Duration(milliseconds: 1500),

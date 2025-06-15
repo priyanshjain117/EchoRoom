@@ -1,6 +1,7 @@
 import 'package:chat_app/widgets/chat_messages.dart';
 import 'package:chat_app/widgets/new_message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final room = widget.doc.data() as Map<String, dynamic>;
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -28,6 +30,29 @@ class _ChatScreenState extends State<ChatScreen> {
                 color: Theme.of(context).colorScheme.onTertiary,
               ),
         ),
+        actions: user!.uid == room['createdBy']
+            ? [
+                IconButton(
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection('rooms')
+                        .doc(widget.doc.id)
+                        .delete();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          duration: Duration(milliseconds: 1500),
+                          content: Text('Room deleted successfully!'),
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  icon: const Icon(Icons.delete_forever),
+                ),
+              ]
+            : [],
         foregroundColor: Theme.of(context).colorScheme.onTertiary,
         backgroundColor: Theme.of(context).colorScheme.tertiary,
       ),
@@ -44,8 +69,14 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         child: Column(
           children: [
-            Expanded(child: ChatMessages(doc: widget.doc,)),
-            NewMessage(doc: widget.doc,),
+            Expanded(
+              child: ChatMessages(
+                doc: widget.doc,
+              ),
+            ),
+            NewMessage(
+              doc: widget.doc,
+            ),
           ],
         ),
       ),
