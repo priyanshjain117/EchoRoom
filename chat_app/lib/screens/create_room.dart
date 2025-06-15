@@ -15,20 +15,51 @@ class _CreateRoomState extends State<CreateRoom> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _roomNameController = TextEditingController();
+  final user = FirebaseAuth.instance.currentUser;
+
+  final firestore = FirebaseFirestore.instance;
 
   Future<void> _findRoom() async {
     try {
+      final query = await firestore
+          .collection('rooms')
+          .where('name', isEqualTo: _roomNameController.text)
+          .where('password', isEqualTo: _passwordController.text)
+          .get();
+
+      if (query.docs.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              duration: Duration(milliseconds: 1500),
+              content: Text(
+                "Make sure you entered valid details..",
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final roomId = query.docs.first.id;
+
+      await firestore.collection('rooms').doc(roomId).update({
+        'members': FieldValue.arrayUnion([user!.uid])
+      });
+
       if (mounted) {
         Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Room created successfully!'),
+            duration: Duration(milliseconds: 1500),
+            content: Text('Room Joined successfully!'),
           ),
         );
       }
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -53,21 +84,22 @@ class _CreateRoomState extends State<CreateRoom> {
       return;
     }
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      await FirebaseFirestore.instance.collection('rooms').add({
+      await firestore.collection('rooms').add({
             'name': _roomNameController.text,
+            'password': _passwordController.text,
             'createdBy': user!.uid,
-            'members': [user.uid],
+            'members': [user!.uid],
             'createdAt': Timestamp.now(),
             'lastUpdate': Timestamp.now(),
           } as Map<String, dynamic>);
       if (mounted) {
-        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            duration: Duration(milliseconds: 1500),
             content: Text('Room created successfully!'),
           ),
         );
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (!mounted) return;

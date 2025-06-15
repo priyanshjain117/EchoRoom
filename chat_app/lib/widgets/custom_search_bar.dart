@@ -60,12 +60,14 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
     }).toList();
   }
 
-  void _navigateTo(QueryDocumentSnapshot<Object?> doc){
+  void _navigateTo(QueryDocumentSnapshot<Object?> doc) {
     Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(doc: doc,),
-                ),
-              );
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          doc: doc,
+        ),
+      ),
+    );
   }
 
   Widget _buildMainList(AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -108,7 +110,13 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
             horizontal: 2,
           ),
           child: ListTile(
-            title: Text(room['name'] ?? 'Unnamed Room'),
+            title: Text(
+              room['name'] ?? 'Unnamed Room',
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
             subtitle: Text(
                 'Created at: ${DateTime.fromMillisecondsSinceEpoch(room['createdAt'].millisecondsSinceEpoch)}'),
             onTap: () {
