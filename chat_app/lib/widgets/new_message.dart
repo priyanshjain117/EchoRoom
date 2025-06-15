@@ -49,9 +49,11 @@ class _NewMessageState extends State<NewMessage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 25,
+      padding: const EdgeInsets.only(
+        right: 15,
+        left: 15,
+        bottom: 25,
+        top: 15,
       ),
       child: Card(
         color: Colors.transparent,
