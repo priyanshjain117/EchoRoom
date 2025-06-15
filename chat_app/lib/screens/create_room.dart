@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CreateRoom extends StatefulWidget {
-  const CreateRoom({super.key});
+  const CreateRoom({super.key, required this.title});
+  final String title;
 
   @override
   State<CreateRoom> createState() => _CreateRoomState();
@@ -15,6 +16,30 @@ class _CreateRoomState extends State<CreateRoom> {
   final _passwordController = TextEditingController();
   final _roomNameController = TextEditingController();
 
+  Future<void> _findRoom() async {
+    try {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Room created successfully!'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _onSubmit() async {
     bool isValid = _formKey.currentState!.validate();
 
@@ -23,7 +48,10 @@ class _CreateRoomState extends State<CreateRoom> {
     }
 
     _formKey.currentState!.save();
-
+    if (widget.title != "Create a Room") {
+      _findRoom();
+      return;
+    }
     try {
       final user = FirebaseAuth.instance.currentUser;
       await FirebaseFirestore.instance.collection('rooms').add({
@@ -34,9 +62,11 @@ class _CreateRoomState extends State<CreateRoom> {
             'lastUpdate': Timestamp.now(),
           } as Map<String, dynamic>);
       if (mounted) {
-        Navigator.of(context).pop(); 
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Room created successfully!'),),
+          SnackBar(
+            content: Text('Room created successfully!'),
+          ),
         );
       }
     } catch (e) {
@@ -65,7 +95,7 @@ class _CreateRoomState extends State<CreateRoom> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Create a Room",
+          widget.title,
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 fontWeight: FontWeight.w500,
                 color: Theme.of(context).colorScheme.onTertiary,
@@ -106,7 +136,9 @@ class _CreateRoomState extends State<CreateRoom> {
                     ),
                     decoration: InputDecoration(
                       labelText: 'Room Name',
-                      hintText: 'Enter your room name',
+                      hintText: widget.title == "Create a Room"
+                          ? 'Enter your room name'
+                          : 'Enter a room name to Join',
                       hintStyle: const TextStyle(
                         color: Colors.white54,
                       ),
@@ -165,7 +197,9 @@ class _CreateRoomState extends State<CreateRoom> {
                     ),
                     onPressed: _onSubmit,
                     label: Text(
-                      "Create Room",
+                      widget.title == "Create a Room"
+                          ? "Create Room"
+                          : "Find Room",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

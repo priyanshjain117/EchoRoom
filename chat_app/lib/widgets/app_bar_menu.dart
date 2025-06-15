@@ -47,7 +47,24 @@ class AppBarMenu extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => CreateRoom(),
+                    builder: (context) => CreateRoom(title: "Create a Room",),
+                  ),
+                );
+              },
+            ),
+            PopupMenuItem(
+              value: 'join_group',
+              child: Text(
+                'Join Room',
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.onTertiaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => CreateRoom(title: "Join a Room",),
                   ),
                 );
               },

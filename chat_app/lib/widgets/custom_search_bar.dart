@@ -60,6 +60,14 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
     }).toList();
   }
 
+  void _navigateTo(QueryDocumentSnapshot<Object?> doc){
+    Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(doc: doc,),
+                ),
+              );
+  }
+
   Widget _buildMainList(AsyncSnapshot<QuerySnapshot> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(child: CircularProgressIndicator());
@@ -96,7 +104,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
               ),
               borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.symmetric(
-            vertical: 3.2,
+            vertical: 4,
             horizontal: 2,
           ),
           child: ListTile(
@@ -105,11 +113,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                 'Created at: ${DateTime.fromMillisecondsSinceEpoch(room['createdAt'].millisecondsSinceEpoch)}'),
             onTap: () {
               print('Tapped on room: ${room['name']}');
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(doc: docs[index],),
-                ),
-              );
+              _navigateTo(docs[index]);
             },
           ),
         );
@@ -139,9 +143,11 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                 final room = filtered[index].data() as Map<String, dynamic>;
                 return ListTile(
                   title: Text(room['name']),
+                  titleTextStyle: Theme.of(context).textTheme.titleMedium,
                   onTap: () {
                     print(
                         'Suggested room selected: ${room['name']} ${filtered[index].id}');
+                    _navigateTo(filtered[index]);
                     _searchInput.clear();
                     _focusNode.unfocus();
                   },
