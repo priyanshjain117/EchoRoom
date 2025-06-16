@@ -7,7 +7,7 @@ class ChatMessages extends StatelessWidget {
   ChatMessages({super.key, required this.doc});
   final QueryDocumentSnapshot doc;
 
-  final loggedInUser=FirebaseAuth.instance.currentUser;
+  final loggedInUser = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,13 @@ class ChatMessages extends StatelessWidget {
 
         if (loadedMessages.isEmpty) {
           return Center(
-            child: Text("No message yet..."),
+            child: Text(
+              "No messages yet...",
+              style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
           );
         }
         return ListView.builder(
@@ -48,20 +54,28 @@ class ChatMessages extends StatelessWidget {
             final nextMessage = index + 1 < loadedMessages.length
                 ? loadedMessages[index + 1].data()
                 : null;
-                final currentMessageUserId=chatMessage['senderId'];
-                final currentMessageUsername=chatMessage['username'];
-                final currentMessageImageUrl=chatMessage['imageUrl'];
-                final currentMessageText=chatMessage['text'];
+            final currentMessageUserId = chatMessage['senderId'];
+            final currentMessageUsername = chatMessage['username'];
+            final currentMessageImageUrl = chatMessage['imageUrl'];
+            final currentMessageText = chatMessage['text'];
 
-                final nextMessageUserId=nextMessage!=null?nextMessage['senderId']:null;
-                
-                final isSame=nextMessageUserId==currentMessageUserId;
+            final nextMessageUserId =
+                nextMessage != null ? nextMessage['senderId'] : null;
 
-                if(isSame){
-                  return MessageBubble.next(message: currentMessageText, isMe: currentMessageUserId==loggedInUser!.uid,);
-                }
-                 
-            return MessageBubble.first(userImage: currentMessageImageUrl, username: currentMessageUsername, message: currentMessageText, isMe: currentMessageUserId==loggedInUser!.uid);
+            final isSame = nextMessageUserId == currentMessageUserId;
+
+            if (isSame) {
+              return MessageBubble.next(
+                message: currentMessageText,
+                isMe: currentMessageUserId == loggedInUser!.uid,
+              );
+            }
+
+            return MessageBubble.first(
+                userImage: currentMessageImageUrl,
+                username: currentMessageUsername,
+                message: currentMessageText,
+                isMe: currentMessageUserId == loggedInUser!.uid);
           },
         );
       },
