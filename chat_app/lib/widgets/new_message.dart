@@ -1,10 +1,10 @@
+import 'package:chat_app/helper/credentials.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 
 class NewMessage extends StatefulWidget {
   const NewMessage({super.key, required this.doc});
@@ -15,7 +15,7 @@ class NewMessage extends StatefulWidget {
 }
 
 class _NewMessageState extends State<NewMessage> {
-  final firestore=FirebaseFirestore.instance;
+  final firestore = FirebaseFirestore.instance;
   final _messageController = TextEditingController();
   @override
   void dispose() {
@@ -24,7 +24,7 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   Future<void> _submitMessage() async {
-    final enteredMessage=_messageController.text.trim();
+    final enteredMessage = _messageController.text.trim();
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null || _messageController.text.trim().isEmpty) return;
@@ -32,7 +32,8 @@ class _NewMessageState extends State<NewMessage> {
     FocusScope.of(context).unfocus();
     _messageController.clear();
 
-    final userData=await firestore.collection('users').doc(currentUser.uid).get();
+    final userData =
+        await firestore.collection('users').doc(currentUser.uid).get();
 
     final messageData = {
       'text': enteredMessage,
@@ -49,24 +50,27 @@ class _NewMessageState extends State<NewMessage> {
         .add(messageData);
     _messageController.clear();
 
-    final url =Uri.parse('https://url.com/send-room-notification');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'roomId': widget.doc.id,
-        'senderUid': currentUser.uid,
-        'title': userData.data()!['username'],
-        'body': enteredMessage,
-      }),
-    );
+    final url = Uri.parse('$backendUrl/send-room-notification');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'roomId': widget.doc.id,
+          'senderUid': currentUser.uid,
+          'title': userData.data()!['username'],
+          'body': enteredMessage,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      print('✅ Notification sent');
-    } else {
-      print('❌ Failed to send notification: ${response.body}');
+      if (response.statusCode == 200) {
+        print('Notification sent');
+      } else {
+        print('Failed to send notification: ${response.body}');
+      }
+    } catch (e) {
+      print('Error sending notification: $e');
     }
-
   }
 
   @override
@@ -96,7 +100,7 @@ class _NewMessageState extends State<NewMessage> {
             left: 12,
             right: 12,
             bottom: 3,
-            top:5,
+            top: 5,
           ),
           child: Row(
             children: [
@@ -110,15 +114,16 @@ class _NewMessageState extends State<NewMessage> {
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
                   decoration: const InputDecoration(
-                      hintText: 'Enter your message',
-                      hintStyle: TextStyle(
-                        color: Color.fromRGBO(255, 255, 255, 0.659),
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,),
+                    hintText: 'Enter your message',
+                    hintStyle: TextStyle(
+                      color: Color.fromRGBO(255, 255, 255, 0.659),
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                  ),
                   cursorColor: Colors.white70,
                   keyboardType: TextInputType.text,
-                  onSubmitted: (_)=>_submitMessage(),
+                  onSubmitted: (_) => _submitMessage(),
                 ),
               ),
               IconButton(

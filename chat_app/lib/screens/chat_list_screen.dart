@@ -19,6 +19,8 @@ class _ChatScreenState extends State<ChatListScreen> {
     await fcm.requestPermission();
     final fcmToken = await fcm.getToken();
     final user = FirebaseAuth.instance.currentUser;
+    print(user);
+    print(fcmToken);
 
     if (user != null && fcmToken != null) {
       await FirebaseFirestore.instance

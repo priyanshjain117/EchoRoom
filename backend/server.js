@@ -22,38 +22,45 @@ const db = admin.firestore();
 
 app.post('/send-room-notification', async (req, res) => {
     const { roomId, senderUid, title, body } = req.body;
+
     try {
         const roomDoc = await db.collection('rooms').doc(roomId).get();
         const roomData = roomDoc.data();
-        if (!roomData || !roomData.members) return res.status(404).send("Room not found");
+
+        if (!roomData || !roomData.members) {
+            return res.status(404).send("Room not found");
+        }
 
         const members = roomData.members.filter(uid => uid !== senderUid);
         const tokens = [];
 
         for (const uid of members) {
-            const uid = await db.collection('users').doc(uid).get();
+            const userDoc = await db.collection('users').doc(uid).get();
             if (userDoc.exists && userDoc.data().fcmToken) {
                 tokens.push(userDoc.data().fcmToken);
             }
         }
 
-        if (tokens.length === 0) return res.status(200).send("No tokens to send");
-
-        const message = {
-            'notification': { title, body },
-            tokens,
+        if (tokens.length === 0) {
+            return res.status(200).send("No tokens to send");
         }
 
-        const response = await admin.messaging().sendMulticast(message);
-        res.status(200).send(`✅ Sent to ${response.successCount} users`);
+        const message = {
+            tokens: tokens,
+            notification: {
+                title,
+                body
+            }
+        };
 
+        const response = await admin.messaging().sendMulticast(message);
+        res.status(200).send(`Sent to ${response.successCount} users`);
     } catch (error) {
-        console.error("❌ Error sending notification:", error);
+        console.error("Error sending notification:", error);
         res.status(500).send("Server error");
     }
-
-
 });
+
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
