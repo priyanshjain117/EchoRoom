@@ -30,7 +30,7 @@ app.post('/send-room-notification', async (req, res) => {
         const members = roomData.members.filter(uid => uid !== senderUid);
         const tokens = [];
 
-        for (const uid in members) {
+        for (const uid of members) {
             const uid = await db.collection('users').doc(uid).get();
             if (userDoc.exists && userDoc.data().fcmToken) {
                 tokens.push(userDoc.data().fcmToken);
@@ -48,7 +48,7 @@ app.post('/send-room-notification', async (req, res) => {
         res.status(200).send(`✅ Sent to ${response.successCount} users`);
 
     } catch (error) {
-        console.error("❌ Error sending notification:", err);
+        console.error("❌ Error sending notification:", error);
         res.status(500).send("Server error");
     }
 
