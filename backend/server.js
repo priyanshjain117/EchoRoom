@@ -14,7 +14,7 @@ admin.initializeApp({
     credential: admin.credential.cert({
         projectId: process.env.PROJECT_ID,
         clientEmail: process.env.CLIENT_EMAIL,
-        privateKey: process.env.PRIVATE_KEY,
+        privateKey: JSON.parse(`"${process.env.PRIVATE_KEY}"`),
     })
 });
 
@@ -53,7 +53,7 @@ app.post('/send-room-notification', async (req, res) => {
             }
         };
 
-        const response = await admin.messaging().sendMulticast(message);
+        const response = await admin.messaging().sendEachForMulticast(message);
         res.status(200).send(`Sent to ${response.successCount} users`);
     } catch (error) {
         console.error("Error sending notification:", error);
