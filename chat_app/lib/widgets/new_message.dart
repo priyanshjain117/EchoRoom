@@ -1,6 +1,10 @@
+import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class NewMessage extends StatefulWidget {
   const NewMessage({super.key, required this.doc});
@@ -44,6 +48,25 @@ class _NewMessageState extends State<NewMessage> {
         .collection('messages')
         .add(messageData);
     _messageController.clear();
+
+    final url =Uri.parse('https://url.com/send-room-notification');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'roomId': widget.doc.id,
+        'senderUid': currentUser.uid,
+        'title': userData.data()!['username'],
+        'body': enteredMessage,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ Notification sent');
+    } else {
+      print('❌ Failed to send notification: ${response.body}');
+    }
+
   }
 
   @override
