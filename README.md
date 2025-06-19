@@ -82,6 +82,7 @@ echoRoom/
 │   └── package.json            # Node.js dependencies
 │
 └── README.md                   # Project documentation
+└── LICENSE                   # Project LICENSE
 ```
 
 ---
@@ -92,8 +93,8 @@ echoRoom/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/echoRoom.git
-   cd echoRoom/flutter_app
+   git clone https://github.com/priyanshjain117/EchoRoom.git
+   cd echoRoom/chat_app
    ```
 
 2. **Install Flutter dependencies:**
@@ -119,7 +120,7 @@ echoRoom/
 
 1. **Navigate to server directory:**
    ```bash
-   cd echoRoom/server
+   cd echoRoom/backend
    ```
 
 2. **Install Node.js dependencies:**
@@ -128,15 +129,15 @@ echoRoom/
    ```
 
 3. **Add Firebase Admin SDK credentials:**
-   - Download `firebase-adminsdk.json` from [Firebase Console > Project Settings > Service Accounts]
-   - Place it in the `server/` directory
+   - Download `service-account.json` from [Firebase Console > Project Settings > Service Accounts]
+   - Place it in the `backend/` directory
 
 4. **Configure FCM service:**
    - Update `fcmService.js` with your Firebase project credentials
 
 5. **Start the backend server:**
    ```bash
-   node index.js
+   npm start
    ```
 
 ---
