@@ -35,10 +35,6 @@ EchoRoom is a **real-time, room-based chat application** built using **Flutter**
     <td><strong>Push Notifications</strong> sent only to users in the respective chat room</td>
   </tr>
   <tr>
-    <td>🔄</td>
-    <td>Subscribes/unsubscribes users from FCM topics based on room entry/exit</td>
-  </tr>
-  <tr>
     <td>💬</td>
     <td>Clean and responsive <strong>Flutter UI</strong></td>
   </tr>
@@ -73,17 +69,17 @@ EchoRoom is a **real-time, room-based chat application** built using **Flutter**
 ```
 echoRoom/
 │
-├── flutter_app/                 # Flutter mobile application
+├── chat_app/                 # Flutter mobile application
 │   ├── lib/
 │   │   ├── main.dart           # App entry point
+│   │   ├── helper/             # credentials for api key
 │   │   ├── screens/            # UI screens
-│   │   └── services/           # Firebase & API services
+│   │   └── widgets/            # UI widgets for re-useability
 │   └── pubspec.yaml            # Flutter dependencies
 │
 ├── server/                     # Node.js backend
-│   ├── index.js               # Express server setup
-│   ├── fcmService.js          # FCM notification handler
-│   └── package.json           # Node.js dependencies
+│   ├── server.js               # Express server setup and FCM notification handler
+│   └── package.json            # Node.js dependencies
 │
 └── README.md                   # Project documentation
 ```
@@ -147,27 +143,38 @@ echoRoom/
 
 ## 🔔 How Push Notifications Work
 
-### **User Joins Room:**
+### **Token Storage:**
+When a user logs in, their FCM token is stored in Firestore:    
 ```dart
-FirebaseMessaging.instance.subscribeToTopic('room_$roomId');
-```
+Future<void> _setUpFirebaseMessage() async {
+    await fcm.requestPermission();
+    final fcmToken = await fcm.getToken();
+    final user = FirebaseAuth.instance.currentUser;
+    print(user);
+    print(fcmToken);
 
-### **User Leaves Room:**
-```dart
-FirebaseMessaging.instance.unsubscribeFromTopic('room_$roomId');
+    if (user != null && fcmToken != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'fcmToken': fcmToken,
+      });
+    }
+  }
 ```
 
 ### **Backend Sends Notification:**
 ```javascript
-const payload = {
-  notification: {
-    title: `New message in ${roomId}`,
-    body: messageText
-  },
-  topic: `room_${roomId}`
-};
+const message = {
+            tokens: tokens,
+            notification: {
+                title,
+                body
+            }
+        };
 
-admin.messaging().send(payload);
+const response = await admin.messaging().sendEachForMulticast(message);
 ```
 
 The backend listens to Firestore changes or receives POST requests and sends targeted push notifications to users subscribed to specific room topics.
